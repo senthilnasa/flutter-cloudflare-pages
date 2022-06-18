@@ -1,0 +1,49 @@
+name: 'Deploy Flutter web app to Cloudflare Pages'
+description: 'Automates the build and deployment of your Flutter web app on Cloudflare Pages.'
+author: 'senthilnasa'
+
+branding:
+  color: blue
+  icon: code
+
+inputs:
+  webRenderer:
+    description: 'Which web renderer to be used, default is auto'
+    required: false
+    default: auto
+  workingDir:
+    description: 'The directory where the project is (default .)'
+    required: false
+    default: .
+  baseHref:
+    description: 'base href (if applicable)'
+    required: false
+    default: "/"
+  customArgs:
+    description: 'Custom args like: --dart-define="simple=example"'
+    required: false
+    default: ""
+  cfProjectName:
+    description: 'The Cloudflare Project Name'
+    required: true
+    default: ""
+
+runs:
+  using: 'composite'
+  steps:
+    - run: flutter config --enable-web
+      shell: bash
+      working-directory: ${{inputs.workingDir}}
+    - run: flutter pub get
+      shell: bash
+      working-directory: ${{inputs.workingDir}}
+    - run: flutter build web --release --web-renderer=${{inputs.webRenderer}} --base-href ${{inputs.baseHref}} ${{inputs.customArgs}}
+      shell: bash
+      working-directory: ${{inputs.workingDir}}
+    - uses: actions/checkout@v3
+    - name: Publish
+      uses: cloudflare/wrangler-action@2.0.0
+      with:
+        apiToken: ${{ secrets.CF_API_TOKEN }}
+        accountId: ${{ secrets.CF_ACCOUNT_ID }}
+        command: pages publish --project-name=${{inputs.cfProjectName}}
