@@ -27,6 +27,14 @@ inputs:
     description: 'The Cloudflare Project Name'
     required: true
     default: ""
+  cfApiToken:
+    description: 'The Cloudflare API Token'
+    required: true
+    default: ""
+  cfAccountId:
+    description: 'The Cloudflare Account ID'
+    required: true
+    default: ""
 
 runs:
   using: 'composite'
@@ -40,10 +48,9 @@ runs:
     - run: flutter build web --release --web-renderer=${{inputs.webRenderer}} --base-href ${{inputs.baseHref}} ${{inputs.customArgs}}
       shell: bash
       working-directory: ${{inputs.workingDir}}
-    - uses: actions/checkout@v3
-    - name: Publish
-      uses: cloudflare/wrangler-action@2.0.0
+    - uses: cloudflare/wrangler-action@2.0.0
       with:
-        apiToken: ${{ secrets.CF_API_TOKEN }}
-        accountId: ${{ secrets.CF_ACCOUNT_ID }}
+        apiToken: ${{inputs.CF_API_TOKEN}}
+        accountId: ${{inputs.CF_ACCOUNT_ID}}
         command: pages publish --project-name=${{inputs.cfProjectName}}
+    - uses: actions/checkout@v3
